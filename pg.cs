@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SistemaContableBar
+namespace app_contable
 {
     // Clase que representa una cuenta contable
     public class Cuenta
