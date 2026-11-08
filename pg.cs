@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace app_contable
 {
@@ -200,10 +201,36 @@ namespace app_contable
 
                 if (cuentaSeleccionada != null)
                 {
-                    Console.Write("Monto a Débito: ");
-                    decimal debe = decimal.Parse(Console.ReadLine());
-                    Console.Write("Monto a Haber: ");
-                    decimal haber = decimal.Parse(Console.ReadLine());
+                    //Mejora Validacion DEBE--------------
+                    decimal debe = 0;
+                    bool entradaValidaDebe = false;
+                    while (!entradaValidaDebe)
+                    {
+                      Console.Write("Monto a Débito: ");
+                      if (decimal.TryParse(Console.ReadLine(), out debe) && debe >= 0)
+                        {
+                            entradaValidaDebe = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Ingrese un valor numérico Valido para el debito");
+                        }
+                    }
+                //Mejora de Validacion HABER-----------------
+                    decimal haber = 0;
+                    bool entradaValidaHaber = false;
+                    while (!entradaValidaHaber)
+                    {
+                        Console.WriteLine("Monto Haber: ");
+                        if (decimal.TryParse(Console.ReadLine(), out haber) && haber >= 0)
+                        {
+                            entradaValidaHaber = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Ingrese un valor numérico Valido para el haber");
+                        }
+                    }
 
                     nuevoAsiento.Detalles.Add(new DetalleAsiento(cuentaSeleccionada, debe, haber));
                     cuentaSeleccionada.SaldoDebe += debe;
@@ -389,9 +416,34 @@ namespace app_contable
         static void RespaldarInformacion()
         {
             Console.Clear();
-            Console.WriteLine("--- RESPALDO DE INFORMACIÓN ---");
-            Console.WriteLine("Cuentas y transacciones almacenadas correctamente en memoria.");
-            Console.WriteLine("¡Respaldo simulado con éxito!");
+            Console.WriteLine("----- RESPALDO DE INFORMACIÓN EN ARCHIVO -----");
+            try
+            {
+                //Creacion de un archivo .txt usando System.IO--------------------
+                string rutaArchivo = "RespaldoLibroDiario.txt";
+                using (StreamWriter writer = new StreamWriter(rutaArchivo))
+                {
+                    writer.WriteLine("RESPALDO DEL LIBRO DIARIO");
+                    writer.WriteLine($"Fecha de respaldo: {DateTime.Now}\n");
+
+                    foreach (var asiento in libroDiario)
+                    {
+                        writer.WriteLine($"Asiento #{asiento.Numero} - Fecha: {asiento.Fecha.ToShortDateString()}");
+                        writer.WriteLine($"Consepto: {asiento.Descripcion}");
+                        foreach (var d in asiento.Detalles)
+                        {
+                            writer.WriteLine($" -{d.Cuenta.Nombre}:Debe = {d.Debe:C2} | Haber = {d.Haber:C2}");
+                        }
+                        writer.WriteLine(new string('-', 40));
+                    }
+                }
+                 Console.WriteLine("Información respaldada exitosamente");
+                  Console.WriteLine($"Archivo guardado en: {Path.GetFullPath(rutaArchivo)}");
+            }
+            catch (Exception ex)
+            {
+                 Console.WriteLine($"Ocurrió un error al intentar guardar el archivo: {ex.Message}");
+            }
         }
     }
 }
