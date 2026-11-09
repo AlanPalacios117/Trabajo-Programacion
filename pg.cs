@@ -77,7 +77,7 @@ namespace app_contable
             {
                 Console.Clear();
                 Console.WriteLine("===========================================");
-                Console.WriteLine("       SISTEMA CONTABLE EMPRESARIAL        ");
+                Console.WriteLine(" Aplicacion Contable-Tentacúlos Cocteleria ");
                 Console.WriteLine("===========================================");
                 Console.WriteLine("1. Administrar cuentas");
                 Console.WriteLine("2. Registrar operación contable");
@@ -128,10 +128,10 @@ namespace app_contable
                             RespaldarInformacion();
                             break;
                         case 11:
-                            Console.WriteLine("\nSaliendo del sistema...");
+                            Console.WriteLine("\nsaliendo de la aplicacion.");
                             break;
                         default:
-                            Console.WriteLine("\nOpción inválida. Intente de nuevo.");
+                            Console.WriteLine("\nOpción no disponible, porfavor seleccione una opcion valida.");
                             break;
                     }
                 }
@@ -142,7 +142,7 @@ namespace app_contable
 
                 if (opcion != 11)
                 {
-                    Console.WriteLine("\nPresione cualquier tecla para continuar...");
+                    Console.WriteLine("\nPulse una tecla para continuar.");
                     Console.ReadKey();
                 }
 
@@ -177,7 +177,7 @@ namespace app_contable
         static void RegistrarOperacion()
         {
             Console.Clear();
-            Console.WriteLine("--- REGISTRAR NUEVA OPERACIÓN CONTABLE ---");
+            Console.WriteLine("--- REGISTRAR OPERACIÓN CONTABLE ---");
             Console.Write("Descripción del asiento (ej. Venta diaria del bar): ");
             string desc = Console.ReadLine();
 
@@ -254,11 +254,11 @@ namespace app_contable
             if (totalDebe == totalHaber)
             {
                 libroDiario.Add(nuevoAsiento);
-                Console.WriteLine("\n¡Asiento registrado con éxito cumpliendo la partida doble!");
+                Console.WriteLine("\nAsiento registrado correctamente");
             }
             else
             {
-                Console.WriteLine($"\nError: El asiento no cuadra. Total Debe ({totalDebe}) != Total Haber ({totalHaber}). Operación descartada.");
+                Console.WriteLine($"\nError: El asiento no cuadra. Total Debe ({totalDebe}) != Total Haber ({totalHaber}). Operación no permitida");
                 // Revertir saldos temporales si no cuadra
                 foreach(var d in nuevoAsiento.Detalles)
                 {
@@ -271,7 +271,7 @@ namespace app_contable
         static void ConsultarCuentasT()
         {
             Console.Clear();
-            Console.WriteLine("--- CONSULTA DE CUENTAS T (MAYORIZACIÓN VISUAL) ---");
+            Console.WriteLine("--- CONSULTA DE CUENTAS T---");
             foreach (var c in catalogoCuentas)
             {
                 Console.WriteLine($"\nCuenta: {c.Codigo} - {c.Nombre} ({c.Tipo})");
@@ -344,7 +344,7 @@ namespace app_contable
         static void GenerarEstadoResultados()
         {
             Console.Clear();
-            Console.WriteLine("--- ESTADO DE RESULTADOS (PÉRDIDAS Y GANANCIAS) ---");
+            Console.WriteLine("--- ESTADO DE RESULTADOS O DE PÉRDIDAS Y GANANCIAS) ---");
             decimal totalIngresos = 0;
             decimal totalGastos = 0;
 
@@ -374,7 +374,7 @@ namespace app_contable
         static void GenerarBalanceGeneral()
         {
             Console.Clear();
-            Console.WriteLine("--- BALANCE GENERAL (SITUACIÓN FINANCIERA) ---");
+            Console.WriteLine("--- BALANCE GENERAL O ESTADO DE SITUACIÓN FINANCIERA) ---");
             decimal totalActivos = 0;
             decimal totalPasivos = 0;
             decimal totalCapital = 0;
@@ -416,7 +416,7 @@ namespace app_contable
         static void RespaldarInformacion()
         {
             Console.Clear();
-            Console.WriteLine("----- RESPALDO DE INFORMACIÓN EN ARCHIVO -----");
+            Console.WriteLine("----- RESPALDO DE INFORMACIÓN -----");
             try
             {
                 //Creacion de un archivo .txt usando System.IO--------------------
