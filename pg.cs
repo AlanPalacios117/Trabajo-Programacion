@@ -177,114 +177,129 @@ namespace app_contable
 
         static void RegistrarOperacion()
         {
-            Console.Clear();
-            Console.WriteLine("--- REGISTRAR OPERACIÓN CONTABLE ---");
-            Console.Write("Descripción del asiento (ej. Venta diaria del bar): ");
-            string desc = Console.ReadLine();
-
-            AsientoContable nuevoAsiento = new AsientoContable(libroDiario.Count + 1, desc);
-
-            bool agregando = true;
-            decimal totalDebe = 0;
-            decimal totalHaber = 0;
-
-            while (agregando)
+            try
             {
-                Console.WriteLine("\nCuentas disponibles:");
-                foreach (var c in catalogoCuentas)
+                Console.Clear();
+                Console.WriteLine("--- REGISTRAR OPERACIÓN CONTABLE ---");
+                Console.Write("Descripción del asiento: ");
+                string desc = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(desc))
                 {
-                    Console.WriteLine($"[{c.Codigo}] {c.Nombre}");
+                    Console.WriteLine("La descripción no puede estar vacía.");
+                    return;
                 }
 
-                Console.Write("Ingrese el código de la cuenta a afectar: ");
-                string cod = Console.ReadLine();
-                Cuenta cuentaSeleccionada = catalogoCuentas.Find(x => x.Codigo == cod);
+                AsientoContable nuevoAsiento = new AsientoContable(libroDiario.Count + 1, desc);
 
-                if (cuentaSeleccionada != null)
+                bool agregando = true;
+                decimal totalDebe = 0;
+                decimal totalHaber = 0;
+
+                while (agregando)
                 {
-                    // Validación DEBE
-                    decimal debe = 0;
-                    bool entradaValidaDebe = false;
-                    while (!entradaValidaDebe)
+                    Console.WriteLine("\nCuentas disponibles:");
+                    foreach (var c in catalogoCuentas)
                     {
-                      Console.Write("Monto a Débito: ");
-                      if (decimal.TryParse(Console.ReadLine(), out debe) && debe >= 0)
-                        {
-                            entradaValidaDebe = true;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Ingrese un valor numérico Válido para el débito");
-                        }
+                        Console.WriteLine($"[{c.Codigo}] {c.Nombre}");
                     }
 
-                    // Validación HABER
-                    decimal haber = 0;
-                    bool entradaValidaHaber = false;
-                    while (!entradaValidaHaber)
+                    Console.Write("Ingrese el código de la cuenta a afectar: ");
+                    string cod = Console.ReadLine();
+                    Cuenta cuentaSeleccionada = catalogoCuentas.Find(x => x.Codigo == cod);
+
+                    if (cuentaSeleccionada != null)
                     {
-                        Console.Write("Monto a Haber: ");
-                        if (decimal.TryParse(Console.ReadLine(), out haber) && haber >= 0)
+                        // Validación DEBE
+                        decimal debe = 0;
+                        bool entradaValidaDebe = false;
+                        while (!entradaValidaDebe)
                         {
-                            entradaValidaHaber = true;
+                            Console.Write("Monto a Débito: ");
+                            if (decimal.TryParse(Console.ReadLine(), out debe) && debe >= 0)
+                            {
+                                entradaValidaDebe = true;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Ingrese un valor numérico Válido para el débito");
+                            }
                         }
-                        else
+
+                        // Validación HABER
+                        decimal haber = 0;
+                        bool entradaValidaHaber = false;
+                        while (!entradaValidaHaber)
                         {
-                            Console.WriteLine("Ingrese un valor numérico Válido para el haber");
+                            Console.Write("Monto a Haber: ");
+                            if (decimal.TryParse(Console.ReadLine(), out haber) && haber >= 0)
+                            {
+                                entradaValidaHaber = true;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Ingrese un valor numérico Válido para el haber");
+                            }
                         }
-                    }
 
-                    nuevoAsiento.Detalles.Add(new DetalleAsiento(cuentaSeleccionada, debe, haber));
-                    cuentaSeleccionada.SaldoDebe += debe;
-                    cuentaSeleccionada.SaldoHaber += haber;
+                        nuevoAsiento.Detalles.Add(new DetalleAsiento(cuentaSeleccionada, debe, haber));
 
-                    totalDebe += debe;
-                    totalHaber += haber;
-                }
-                else
-                {
-                    Console.WriteLine("Cuenta no encontrada. Ingrese un código disponible en el catálogo de cuentas.");
-                    continue;
-                }
-
-                // Ciclo estricto para que SOLO acepte 's' o 'n'
-                bool respuestaValida = false;
-                while (!respuestaValida)
-                {
-                    Console.Write("¿Desea agregar otra línea a este asiento? (s/n): ");
-                    string respuesta = Console.ReadLine()?.Trim().ToLower();
-
-                    if (respuesta == "s")
-                    {
-                        agregando = true;
-                        respuestaValida = true;
-                    }
-                    else if (respuesta == "n")
-                    {
-                        agregando = false;
-                        respuestaValida = true;
+                        totalDebe += debe;
+                        totalHaber += haber;
                     }
                     else
                     {
-                        Console.WriteLine("Respuesta no válida. Debe escribir únicamente 's' o 'n'.");
+                        Console.WriteLine("Cuenta no encontrada. Ingrese un código disponible en el catálogo de cuentas.");
+                        continue;
+                    }
+
+                    // Ciclo estricto para que SOLO acepte 's' o 'n'
+                    bool respuestaValida = false;
+                    while (!respuestaValida)
+                    {
+                        Console.Write("¿Desea agregar otra línea a este asiento? (s/n): ");
+                        string respuesta = Console.ReadLine()?.Trim().ToLower();
+
+                        if (respuesta == "s")
+                        {
+                            agregando = true;
+                            respuestaValida = true;
+                        }
+                        else if (respuesta == "n")
+                        {
+                            agregando = false;
+                            respuestaValida = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Respuesta no válida. Debe escribir únicamente 's' o 'n'.");
+                        }
+                    }
+                }
+
+                if (totalDebe == totalHaber)
+                {
+                    libroDiario.Add(nuevoAsiento);
+                    Console.WriteLine("\nAsiento registrado correctamente");
+                }
+                else
+                {
+                    Console.WriteLine($"\nError: El asiento no cuadra. Total Debe ({totalDebe}) != Total Haber ({totalHaber}). Operación no permitida");
+                    // Revertir saldos temporales si no cuadra
+                    foreach (var d in nuevoAsiento.Detalles)
+                    {
+                        d.Cuenta.SaldoDebe -= d.Debe;
+                        d.Cuenta.SaldoHaber -= d.Haber;
                     }
                 }
             }
-
-            if (totalDebe == totalHaber)
+            catch (OverflowException)
             {
-                libroDiario.Add(nuevoAsiento);
-                Console.WriteLine("\nAsiento registrado correctamente");
+                Console.WriteLine("Error: El monto ingresado supera el límite permitido.");
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine($"\nError: El asiento no cuadra. Total Debe ({totalDebe}) != Total Haber ({totalHaber}). Operación no permitida");
-                // Revertir saldos temporales si no cuadra
-                foreach(var d in nuevoAsiento.Detalles)
-                {
-                    d.Cuenta.SaldoDebe -= d.Debe;
-                    d.Cuenta.SaldoHaber -= d.Haber;
-                }
+                Console.WriteLine("Ocurrió un error al registrar la operación: " + ex.Message);
             }
         }
 
@@ -312,10 +327,18 @@ namespace app_contable
                 File.WriteAllText(nombreArchivo, contenido);
                 Console.WriteLine($"\n[Archivo guardado exitosamente en: {Path.GetFullPath(nombreArchivo)}]");
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"\n[Error al guardar el archivo]: {ex.Message}");
-            }
+            catch (UnauthorizedAccessException)
+{
+    Console.WriteLine("Error: No tienes permisos para guardar el archivo.");
+}
+catch (IOException ex)
+{
+    Console.WriteLine("Error al trabajar con el archivo: " + ex.Message);
+}
+catch (Exception ex)
+{
+    Console.WriteLine("Error inesperado: " + ex.Message);
+}
         }
 
         static void GenerarLibroDiario()
