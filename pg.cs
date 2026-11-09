@@ -202,7 +202,7 @@ namespace app_contable
 
                 if (cuentaSeleccionada != null)
                 {
-                    //Mejora Validacion DEBE--------------
+                    // Validación DEBE
                     decimal debe = 0;
                     bool entradaValidaDebe = false;
                     while (!entradaValidaDebe)
@@ -214,22 +214,23 @@ namespace app_contable
                         }
                         else
                         {
-                            Console.WriteLine("Ingrese un valor numérico Valido para el debito");
+                            Console.WriteLine("Ingrese un valor numérico Válido para el débito");
                         }
                     }
-                //Mejora de Validacion HABER-----------------
+
+                    // Validación HABER
                     decimal haber = 0;
                     bool entradaValidaHaber = false;
                     while (!entradaValidaHaber)
                     {
-                        Console.WriteLine("Monto Haber: ");
+                        Console.Write("Monto a Haber: ");
                         if (decimal.TryParse(Console.ReadLine(), out haber) && haber >= 0)
                         {
                             entradaValidaHaber = true;
                         }
                         else
                         {
-                            Console.WriteLine("Ingrese un valor numérico Valido para el haber");
+                            Console.WriteLine("Ingrese un valor numérico Válido para el haber");
                         }
                     }
 
@@ -242,13 +243,31 @@ namespace app_contable
                 }
                 else
                 {
-                    Console.WriteLine("Cuenta no encontrada. Ingrese un codigo disponible en el catálogo de cuentas.");
+                    Console.WriteLine("Cuenta no encontrada. Ingrese un código disponible en el catálogo de cuentas.");
+                    continue;
                 }
 
-                Console.Write("¿Desea agregar otra línea a este asiento? Escriba Si, si desea Continuar o cualquier otra tecla para finalizar: ");
-                if (Console.ReadLine()?.Trim().ToLower() != "si")
+                // Ciclo estricto para que SOLO acepte 's' o 'n'
+                bool respuestaValida = false;
+                while (!respuestaValida)
                 {
-                    agregando = false;
+                    Console.Write("¿Desea agregar otra línea a este asiento? (s/n): ");
+                    string respuesta = Console.ReadLine()?.Trim().ToLower();
+
+                    if (respuesta == "s")
+                    {
+                        agregando = true;
+                        respuestaValida = true;
+                    }
+                    else if (respuesta == "n")
+                    {
+                        agregando = false;
+                        respuestaValida = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Respuesta no válida. Debe escribir únicamente 's' o 'n'.");
+                    }
                 }
             }
 
