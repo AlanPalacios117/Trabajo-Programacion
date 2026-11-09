@@ -1,0 +1,14 @@
+--- ESTADO DE RESULTADOS O DE PÉRDIDAS Y GANANCIAS ---
+
+INGRESOS:
+  Ingresos por Ventas (Bar y Cocina): C$0.00
+
+GASTOS:
+  Gastos de Salarios por Turno: C$0.00
+  Gastos de Comisiones POS: C$0.00
+  Gastos de Alquiler y Servicios: C$0.00
+  Gastos por Mermas y Cortesías: C$0.00
+----------------------------------------
+TOTAL INGRESOS: C$0.00
+TOTAL GASTOS:   C$0.00
+UTILIDAD NETA:  C$0.00

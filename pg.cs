@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace app_contable
 {
@@ -241,11 +242,11 @@ namespace app_contable
                 }
                 else
                 {
-                    Console.WriteLine("Cuenta no encontrada.");
+                    Console.WriteLine("Cuenta no encontrada. Ingrese un codigo disponible en el catálogo de cuentas.");
                 }
 
-                Console.Write("¿Desea agregar otra línea a este asiento? (s/n): ");
-                if (Console.ReadLine().ToLower() != "s")
+                Console.Write("¿Desea agregar otra línea a este asiento? Escriba Si, si desea Continuar o cualquier otra tecla para finalizar: ");
+                if (Console.ReadLine()?.Trim().ToLower() != "si")
                 {
                     agregando = false;
                 }
@@ -271,7 +272,7 @@ namespace app_contable
         static void ConsultarCuentasT()
         {
             Console.Clear();
-            Console.WriteLine("--- CONSULTA DE CUENTAS T---");
+            Console.WriteLine("--- CONSULTA DE CUENTAS T ---");
             foreach (var c in catalogoCuentas)
             {
                 Console.WriteLine($"\nCuenta: {c.Codigo} - {c.Nombre} ({c.Tipo})");
@@ -282,40 +283,85 @@ namespace app_contable
             }
         }
 
+        // --- MÉTODO AUXILIAR PARA MOSTRAR Y GUARDAR CUALQUIER REPORTE ---
+        static void GuardarYMostrarReporte(string nombreArchivo, string contenido)
+        {
+            Console.Clear();
+            Console.WriteLine(contenido);
+            try
+            {
+                File.WriteAllText(nombreArchivo, contenido);
+                Console.WriteLine($"\n[Archivo guardado exitosamente en: {Path.GetFullPath(nombreArchivo)}]");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n[Error al guardar el archivo]: {ex.Message}");
+            }
+        }
+
         static void GenerarLibroDiario()
         {
             Console.Clear();
-            Console.WriteLine("--- LIBRO DIARIO ---");
             if (libroDiario.Count == 0)
             {
-                Console.WriteLine("No hay operaciones registradas aún.");
+                Console.WriteLine("--- LIBRO DIARIO ---");
+                Console.WriteLine("No hay operaciones registradas aún. No se generará ningún archivo.");
                 return;
             }
 
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("--- LIBRO DIARIO ---");
             foreach (var asiento in libroDiario)
             {
-                Console.WriteLine($"\nAsiento #{asiento.Numero} - Fecha: {asiento.Fecha.ToShortDateString()}");
-                Console.WriteLine($"Concepto: {asiento.Descripcion}");
-                Console.WriteLine($"{"Cuenta",-30} | {"Debe",-10} | {"Haber",-10}");
-                Console.WriteLine(new string('-', 56));
+                sb.AppendLine($"\nAsiento #{asiento.Numero} - Fecha: {asiento.Fecha.ToShortDateString()}");
+                sb.AppendLine($"Concepto: {asiento.Descripcion}");
+                sb.AppendLine($"{"Cuenta",-30} | {"Debe",-10} | {"Haber",-10}");
+                sb.AppendLine(new string('-', 56));
                 foreach (var d in asiento.Detalles)
                 {
-                    Console.WriteLine($"{d.Cuenta.Nombre,-30} | {d.Debe,10:C2} | {d.Haber,10:C2}");
+                    sb.AppendLine($"{d.Cuenta.Nombre,-30} | {d.Debe,10:C2} | {d.Haber,10:C2}");
                 }
             }
+            GuardarYMostrarReporte("LibroDiario.txt", sb.ToString());
         }
 
         static void GenerarLibroMayor()
         {
-            ConsultarCuentasT(); // Las cuentas T reflejan directamente el Libro Mayor
+            Console.Clear();
+            if (libroDiario.Count == 0)
+            {
+                Console.WriteLine("--- LIBRO MAYOR ---");
+                Console.WriteLine("No hay operaciones registradas aún. No se generará ningún archivo.");
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("--- LIBRO MAYOR ---");
+            foreach (var c in catalogoCuentas)
+            {
+                sb.AppendLine($"\nCuenta: {c.Codigo} - {c.Nombre} ({c.Tipo})");
+                sb.AppendLine($"  DEBE (+)      |      HABER (-)");
+                sb.AppendLine($"  {c.SaldoDebe,12:C2}  |  {c.SaldoHaber,12:C2}");
+                sb.AppendLine($"  ---------------------------------");
+                sb.AppendLine($"  Saldo Neto: {c.ObtenerSaldoNeto():C2}");
+            }
+            GuardarYMostrarReporte("LibroMayor.txt", sb.ToString());
         }
 
         static void GenerarBalanzaComprobacion()
         {
             Console.Clear();
-            Console.WriteLine("--- BALANZA DE COMPROBACIÓN ---");
-            Console.WriteLine($"{"Código",-8} | {"Cuenta",-30} | {"Deudor",-12} | {"Acreedor",-12}");
-            Console.WriteLine(new string('-', 68));
+            if (libroDiario.Count == 0)
+            {
+                Console.WriteLine("--- BALANZA DE COMPROBACIÓN ---");
+                Console.WriteLine("No hay operaciones registradas aún. No se generará ningún archivo.");
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("--- BALANZA DE COMPROBACIÓN ---");
+            sb.AppendLine($"{"Código",-8} | {"Cuenta",-30} | {"Deudor",-12} | {"Acreedor",-12}");
+            sb.AppendLine(new string('-', 68));
 
             decimal sumDeudor = 0;
             decimal sumAcreedor = 0;
@@ -325,7 +371,6 @@ namespace app_contable
                 decimal deudor = (c.Tipo == "Activo" || c.Tipo == "Gasto") ? c.ObtenerSaldoNeto() : 0;
                 decimal acreedor = (c.Tipo == "Pasivo" || c.Tipo == "Capital" || c.Tipo == "Ingreso") ? c.ObtenerSaldoNeto() : 0;
 
-                // Si manejas saldos netos generales:
                 if (c.SaldoDebe > c.SaldoHaber)
                     deudor = c.SaldoDebe - c.SaldoHaber;
                 else
@@ -334,78 +379,100 @@ namespace app_contable
                 sumDeudor += deudor;
                 sumAcreedor += acreedor;
 
-                Console.WriteLine($"{c.Codigo,-8} | {c.Nombre,-30} | {deudor,12:C2} | {acreedor,12:C2}");
+                sb.AppendLine($"{c.Codigo,-8} | {c.Nombre,-30} | {deudor,12:C2} | {acreedor,12:C2}");
             }
 
-            Console.WriteLine(new string('-', 68));
-            Console.WriteLine($"{"TOTALES",-39} | {sumDeudor,12:C2} | {sumAcreedor,12:C2}");
+            sb.AppendLine(new string('-', 68));
+            sb.AppendLine($"{"TOTALES",-39} | {sumDeudor,12:C2} | {sumAcreedor,12:C2}");
+            
+            GuardarYMostrarReporte("BalanzaComprobacion.txt", sb.ToString());
         }
 
         static void GenerarEstadoResultados()
         {
             Console.Clear();
-            Console.WriteLine("--- ESTADO DE RESULTADOS O DE PÉRDIDAS Y GANANCIAS) ---");
+            if (libroDiario.Count == 0)
+            {
+                Console.WriteLine("--- ESTADO DE RESULTADOS ---");
+                Console.WriteLine("No hay operaciones registradas aún. No se generará ningún archivo.");
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("--- ESTADO DE RESULTADOS O DE PÉRDIDAS Y GANANCIAS ---");
             decimal totalIngresos = 0;
             decimal totalGastos = 0;
 
-            Console.WriteLine("\nINGRESOS:");
+            sb.AppendLine("\nINGRESOS:");
             foreach (var c in catalogoCuentas.FindAll(x => x.Tipo == "Ingreso"))
             {
                 decimal saldo = c.ObtenerSaldoNeto();
-                Console.WriteLine($"  {c.Nombre}: {saldo:C2}");
+                sb.AppendLine($"  {c.Nombre}: {saldo:C2}");
                 totalIngresos += saldo;
             }
 
-            Console.WriteLine("\nGASTOS:");
+            sb.AppendLine("\nGASTOS:");
             foreach (var c in catalogoCuentas.FindAll(x => x.Tipo == "Gasto"))
             {
                 decimal saldo = c.ObtenerSaldoNeto();
-                Console.WriteLine($"  {c.Nombre}: {saldo:C2}");
+                sb.AppendLine($"  {c.Nombre}: {saldo:C2}");
                 totalGastos += saldo;
             }
 
             decimal utilidadNeta = totalIngresos - totalGastos;
-            Console.WriteLine(new string('-', 40));
-            Console.WriteLine($"TOTAL INGRESOS: {totalIngresos:C2}");
-            Console.WriteLine($"TOTAL GASTOS:   {totalGastos:C2}");
-            Console.WriteLine($"UTILIDAD NETA:  {utilidadNeta:C2}");
+            sb.AppendLine(new string('-', 40));
+            sb.AppendLine($"TOTAL INGRESOS: {totalIngresos:C2}");
+            sb.AppendLine($"TOTAL GASTOS:   {totalGastos:C2}");
+            sb.AppendLine($"UTILIDAD NETA:  {utilidadNeta:C2}");
+
+            GuardarYMostrarReporte("EstadoResultados.txt", sb.ToString());
         }
 
         static void GenerarBalanceGeneral()
         {
             Console.Clear();
-            Console.WriteLine("--- BALANCE GENERAL O ESTADO DE SITUACIÓN FINANCIERA) ---");
+            if (libroDiario.Count == 0)
+            {
+                Console.WriteLine("--- BALANCE GENERAL ---");
+                Console.WriteLine("No hay operaciones registradas aún. No se generará ningún archivo.");
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("--- BALANCE GENERAL O ESTADO DE SITUACIÓN FINANCIERA ---");
             decimal totalActivos = 0;
             decimal totalPasivos = 0;
             decimal totalCapital = 0;
 
-            Console.WriteLine("\nACTIVOS:");
+            sb.AppendLine("\nACTIVOS:");
             foreach (var c in catalogoCuentas.FindAll(x => x.Tipo == "Activo"))
             {
                 decimal saldo = c.ObtenerSaldoNeto();
-                Console.WriteLine($"  {c.Nombre}: {saldo:C2}");
+                sb.AppendLine($"  {c.Nombre}: {saldo:C2}");
                 totalActivos += saldo;
             }
 
-            Console.WriteLine("\nPASIVOS:");
+            sb.AppendLine("\nPASIVOS:");
             foreach (var c in catalogoCuentas.FindAll(x => x.Tipo == "Pasivo"))
             {
                 decimal saldo = c.ObtenerSaldoNeto();
-                Console.WriteLine($"  {c.Nombre}: {saldo:C2}");
+                sb.AppendLine($"  {c.Nombre}: {saldo:C2}");
                 totalPasivos += saldo;
             }
 
-            Console.WriteLine("\nPATRIMONIO:");
+            sb.AppendLine("\nPATRIMONIO:");
             foreach (var c in catalogoCuentas.FindAll(x => x.Tipo == "Capital"))
             {
                 decimal saldo = c.ObtenerSaldoNeto();
-                Console.WriteLine($"  {c.Nombre}: {saldo:C2}");
+                sb.AppendLine($"  {c.Nombre}: {saldo:C2}");
                 totalCapital += saldo;
             }
 
-            Console.WriteLine(new string('-', 40));
-            Console.WriteLine($"TOTAL ACTIVOS: {totalActivos:C2}");
-            Console.WriteLine($"TOTAL PASIVO + PATRIMONIO: {(totalPasivos + totalCapital):C2}");
+            sb.AppendLine(new string('-', 40));
+            sb.AppendLine($"TOTAL ACTIVOS: {totalActivos:C2}");
+            sb.AppendLine($"TOTAL PASIVO + PATRIMONIO: {(totalPasivos + totalCapital):C2}");
+
+            GuardarYMostrarReporte("BalanceGeneral.txt", sb.ToString());
         }
 
         static void ConsultarMovimientos()
@@ -419,7 +486,6 @@ namespace app_contable
             Console.WriteLine("----- RESPALDO DE INFORMACIÓN -----");
             try
             {
-                //Creacion de un archivo .txt usando System.IO--------------------
                 string rutaArchivo = "RespaldoLibroDiario.txt";
                 using (StreamWriter writer = new StreamWriter(rutaArchivo))
                 {
@@ -429,7 +495,7 @@ namespace app_contable
                     foreach (var asiento in libroDiario)
                     {
                         writer.WriteLine($"Asiento #{asiento.Numero} - Fecha: {asiento.Fecha.ToShortDateString()}");
-                        writer.WriteLine($"Consepto: {asiento.Descripcion}");
+                        writer.WriteLine($"Concepto: {asiento.Descripcion}");
                         foreach (var d in asiento.Detalles)
                         {
                             writer.WriteLine($" -{d.Cuenta.Nombre}:Debe = {d.Debe:C2} | Haber = {d.Haber:C2}");
@@ -438,7 +504,7 @@ namespace app_contable
                     }
                 }
                  Console.WriteLine("Información respaldada exitosamente");
-                  Console.WriteLine($"Archivo guardado en: {Path.GetFullPath(rutaArchivo)}");
+                 Console.WriteLine($"Archivo guardado en: {Path.GetFullPath(rutaArchivo)}");
             }
             catch (Exception ex)
             {

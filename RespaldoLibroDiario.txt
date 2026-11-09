@@ -1,0 +1,13 @@
+RESPALDO DEL LIBRO DIARIO
+Fecha de respaldo: 9/11/2026 14:24:06
+
+Asiento #1 - Fecha: 9/11/2026
+Consepto: CAPITAL
+ -Caja General (Efectivo):Debe = C$50,000.00 | Haber = C$0.00
+ -Capital Social:Debe = C$0.00 | Haber = C$50,000.00
+----------------------------------------
+Asiento #2 - Fecha: 9/11/2026
+Consepto: compra
+ -Inventario de Licores y Cervezas:Debe = C$20,000.00 | Haber = C$0.00
+ -Cuentas por Pagar Proveedores:Debe = C$0.00 | Haber = C$20,000.00
+----------------------------------------
