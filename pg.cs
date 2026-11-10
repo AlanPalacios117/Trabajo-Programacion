@@ -129,10 +129,10 @@ namespace app_contable
                             RespaldarInformacion();
                             break;
                         case 11:
-                            Console.WriteLine("\nsaliendo de la aplicacion.");
+                            Console.WriteLine("\nSaliendo de la aplicacion.");
                             break;
                         default:
-                            Console.WriteLine("\nOpción no disponible, porfavor seleccione una opcion valida.");
+                            Console.WriteLine("\nOpción no disponible, por favor seleccione una opción válida.");
                             break;
                     }
                 }
@@ -177,114 +177,133 @@ namespace app_contable
 
         static void RegistrarOperacion()
         {
-            Console.Clear();
-            Console.WriteLine("--- REGISTRAR OPERACIÓN CONTABLE ---");
-            Console.Write("Descripción del asiento (ej. Venta diaria del bar): ");
-            string desc = Console.ReadLine();
-
-            AsientoContable nuevoAsiento = new AsientoContable(libroDiario.Count + 1, desc);
-
-            bool agregando = true;
-            decimal totalDebe = 0;
-            decimal totalHaber = 0;
-
-            while (agregando)
+            try
             {
-                Console.WriteLine("\nCuentas disponibles:");
-                foreach (var c in catalogoCuentas)
+                Console.Clear();
+                Console.WriteLine("--- REGISTRAR OPERACIÓN CONTABLE ---");
+                Console.Write("Descripción del asiento: ");
+                string desc = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(desc))
                 {
-                    Console.WriteLine($"[{c.Codigo}] {c.Nombre}");
+                    Console.WriteLine("La descripción no puede estar vacía.");
+                    return;
                 }
 
-                Console.Write("Ingrese el código de la cuenta a afectar: ");
-                string cod = Console.ReadLine();
-                Cuenta cuentaSeleccionada = catalogoCuentas.Find(x => x.Codigo == cod);
+                AsientoContable nuevoAsiento = new AsientoContable(libroDiario.Count + 1, desc);
 
-                if (cuentaSeleccionada != null)
+                bool agregando = true;
+                decimal totalDebe = 0;
+                decimal totalHaber = 0;
+
+                while (agregando)
                 {
-                    // Validación DEBE
-                    decimal debe = 0;
-                    bool entradaValidaDebe = false;
-                    while (!entradaValidaDebe)
+                    Console.WriteLine("\nCuentas disponibles:");
+                    foreach (var c in catalogoCuentas)
                     {
-                      Console.Write("Monto a Débito: ");
-                      if (decimal.TryParse(Console.ReadLine(), out debe) && debe >= 0)
-                        {
-                            entradaValidaDebe = true;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Ingrese un valor numérico Válido para el débito");
-                        }
+                        Console.WriteLine($"[{c.Codigo}] {c.Nombre}");
                     }
 
-                    // Validación HABER
-                    decimal haber = 0;
-                    bool entradaValidaHaber = false;
-                    while (!entradaValidaHaber)
+                    Console.Write("Ingrese el código de la cuenta a afectar: ");
+                    string cod = Console.ReadLine();
+                    Cuenta cuentaSeleccionada = catalogoCuentas.Find(x => x.Codigo == cod);
+
+                    if (cuentaSeleccionada != null)
                     {
-                        Console.Write("Monto a Haber: ");
-                        if (decimal.TryParse(Console.ReadLine(), out haber) && haber >= 0)
+                        // Validación DEBE
+                        decimal debe = 0;
+                        bool entradaValidaDebe = false;
+                        while (!entradaValidaDebe)
                         {
-                            entradaValidaHaber = true;
+                            Console.Write("Monto a Débito: ");
+                            if (decimal.TryParse(Console.ReadLine(), out debe) && debe >= 0)
+                            {
+                                entradaValidaDebe = true;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Ingrese un valor numérico válido para el débito.");
+                            }
                         }
-                        else
+
+                        // Validación HABER
+                        decimal haber = 0;
+                        bool entradaValidaHaber = false;
+                        while (!entradaValidaHaber)
                         {
-                            Console.WriteLine("Ingrese un valor numérico Válido para el haber");
+                            Console.Write("Monto a Haber: ");
+                            if (decimal.TryParse(Console.ReadLine(), out haber) && haber >= 0)
+                            {
+                                entradaValidaHaber = true;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Ingrese un valor numérico válido para el haber.");
+                            }
                         }
-                    }
 
-                    nuevoAsiento.Detalles.Add(new DetalleAsiento(cuentaSeleccionada, debe, haber));
-                    cuentaSeleccionada.SaldoDebe += debe;
-                    cuentaSeleccionada.SaldoHaber += haber;
+                        // Agregamos el detalle al asiento temporal
+                        nuevoAsiento.Detalles.Add(new DetalleAsiento(cuentaSeleccionada, debe, haber));
 
-                    totalDebe += debe;
-                    totalHaber += haber;
-                }
-                else
-                {
-                    Console.WriteLine("Cuenta no encontrada. Ingrese un código disponible en el catálogo de cuentas.");
-                    continue;
-                }
-
-                // Ciclo estricto para que SOLO acepte 's' o 'n'
-                bool respuestaValida = false;
-                while (!respuestaValida)
-                {
-                    Console.Write("¿Desea agregar otra línea a este asiento? (s/n): ");
-                    string respuesta = Console.ReadLine()?.Trim().ToLower();
-
-                    if (respuesta == "s")
-                    {
-                        agregando = true;
-                        respuestaValida = true;
-                    }
-                    else if (respuesta == "n")
-                    {
-                        agregando = false;
-                        respuestaValida = true;
+                        totalDebe += debe;
+                        totalHaber += haber;
                     }
                     else
                     {
-                        Console.WriteLine("Respuesta no válida. Debe escribir únicamente 's' o 'n'.");
+                        Console.WriteLine("Cuenta no encontrada. Ingrese un código disponible en el catálogo de cuentas.");
+                        continue;
+                    }
+
+                    // Ciclo estricto para que SOLO acepte 's' o 'n'
+                    bool respuestaValida = false;
+                    while (!respuestaValida)
+                    {
+                        Console.Write("¿Desea agregar otra línea a este asiento? (s/n): ");
+                        string respuesta = Console.ReadLine()?.Trim().ToLower();
+
+                        if (respuesta == "s")
+                        {
+                            agregando = true;
+                            respuestaValida = true;
+                        }
+                        else if (respuesta == "n")
+                        {
+                            agregando = false;
+                            respuestaValida = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Respuesta no válida. Debe escribir únicamente 's' o 'n'.");
+                        }
                     }
                 }
-            }
 
-            if (totalDebe == totalHaber)
-            {
-                libroDiario.Add(nuevoAsiento);
-                Console.WriteLine("\nAsiento registrado correctamente");
-            }
-            else
-            {
-                Console.WriteLine($"\nError: El asiento no cuadra. Total Debe ({totalDebe}) != Total Haber ({totalHaber}). Operación no permitida");
-                // Revertir saldos temporales si no cuadra
-                foreach(var d in nuevoAsiento.Detalles)
+                // Validación de Partida Doble (Los saldos se actualizan SOLO si cuadra)
+                if (totalDebe == totalHaber)
                 {
-                    d.Cuenta.SaldoDebe -= d.Debe;
-                    d.Cuenta.SaldoHaber -= d.Haber;
+                    libroDiario.Add(nuevoAsiento);
+
+                    // Actualización de los saldos permanentes de las cuentas afectadas
+                    foreach (var d in nuevoAsiento.Detalles)
+                    {
+                        d.Cuenta.SaldoDebe += d.Debe;
+                        d.Cuenta.SaldoHaber += d.Haber;
+                    }
+
+                    Console.WriteLine("\nAsiento registrado correctamente y saldos actualizados.");
                 }
+                else
+                {
+                    Console.WriteLine($"\nError: El asiento no cuadra. Total Debe ({totalDebe:C2}) != Total Haber ({totalHaber:C2}). Operación no permitida.");
+                }
+            }
+            catch (OverflowException)
+            {
+                Console.WriteLine("Error: El monto ingresado supera el límite permitido.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Ocurrió un error al registrar la operación: " + ex.Message);
             }
         }
 
@@ -302,19 +321,48 @@ namespace app_contable
             }
         }
 
-        // --- MÉTODO AUXILIAR PARA MOSTRAR Y GUARDAR CUALQUIER REPORTE ---
+        // --- MÉTODO AUXILIAR CON PREGUNTA ESTRICTA (S/N) PARA GENERAR EL ARCHIVO ---
         static void GuardarYMostrarReporte(string nombreArchivo, string contenido)
         {
             Console.Clear();
             Console.WriteLine(contenido);
-            try
+
+            bool respuestaValida = false;
+            while (!respuestaValida)
             {
-                File.WriteAllText(nombreArchivo, contenido);
-                Console.WriteLine($"\n[Archivo guardado exitosamente en: {Path.GetFullPath(nombreArchivo)}]");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"\n[Error al guardar el archivo]: {ex.Message}");
+                Console.Write("\n¿Desea generar y guardar este archivo en disco? (s/n): ");
+                string respuesta = Console.ReadLine()?.Trim().ToLower();
+
+                if (respuesta == "s")
+                {
+                    try
+                    {
+                        File.WriteAllText(nombreArchivo, contenido);
+                        Console.WriteLine($"\n[Archivo guardado exitosamente en: {Path.GetFullPath(nombreArchivo)}]");
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        Console.WriteLine("Error: No tienes permisos para guardar el archivo en esta ruta.");
+                    }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine("Error al trabajar con el archivo: " + ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error inesperado: " + ex.Message);
+                    }
+                    respuestaValida = true;
+                }
+                else if (respuesta == "n")
+                {
+                    Console.WriteLine("\n[Archivo no generado por el usuario.]");
+                    respuestaValida = true;
+                }
+                else
+                {
+                    Console.WriteLine("Respuesta no válida. Debe escribir únicamente 's' o 'n'.");
+                }
             }
         }
 
@@ -387,8 +435,8 @@ namespace app_contable
 
             foreach (var c in catalogoCuentas)
             {
-                decimal deudor = (c.Tipo == "Activo" || c.Tipo == "Gasto") ? c.ObtenerSaldoNeto() : 0;
-                decimal acreedor = (c.Tipo == "Pasivo" || c.Tipo == "Capital" || c.Tipo == "Ingreso") ? c.ObtenerSaldoNeto() : 0;
+                decimal deudor = 0;
+                decimal acreedor = 0;
 
                 if (c.SaldoDebe > c.SaldoHaber)
                     deudor = c.SaldoDebe - c.SaldoHaber;
@@ -462,6 +510,8 @@ namespace app_contable
             decimal totalActivos = 0;
             decimal totalPasivos = 0;
             decimal totalCapital = 0;
+            decimal totalIngresos = 0;
+            decimal totalGastos = 0;
 
             sb.AppendLine("\nACTIVOS:");
             foreach (var c in catalogoCuentas.FindAll(x => x.Tipo == "Activo"))
@@ -487,9 +537,24 @@ namespace app_contable
                 totalCapital += saldo;
             }
 
+            // Calculamos ingresos y gastos para sumar la Utilidad del Ejercicio al Patrimonio
+            foreach (var c in catalogoCuentas.FindAll(x => x.Tipo == "Ingreso"))
+            {
+                totalIngresos += c.ObtenerSaldoNeto();
+            }
+            foreach (var c in catalogoCuentas.FindAll(x => x.Tipo == "Gasto"))
+            {
+                totalGastos += c.ObtenerSaldoNeto();
+            }
+
+            decimal utilidadNeta = totalIngresos - totalGastos;
+            sb.AppendLine($"  Utilidad del Ejercicio: {utilidadNeta:C2}");
+
+            decimal totalPatrimonioYUtilidad = totalCapital + utilidadNeta;
+
             sb.AppendLine(new string('-', 40));
             sb.AppendLine($"TOTAL ACTIVOS: {totalActivos:C2}");
-            sb.AppendLine($"TOTAL PASIVO + PATRIMONIO: {(totalPasivos + totalCapital):C2}");
+            sb.AppendLine($"TOTAL PASIVO + PATRIMONIO: {(totalPasivos + totalPatrimonioYUtilidad):C2}");
 
             GuardarYMostrarReporte("BalanceGeneral.txt", sb.ToString());
         }
@@ -517,17 +582,17 @@ namespace app_contable
                         writer.WriteLine($"Concepto: {asiento.Descripcion}");
                         foreach (var d in asiento.Detalles)
                         {
-                            writer.WriteLine($" -{d.Cuenta.Nombre}:Debe = {d.Debe:C2} | Haber = {d.Haber:C2}");
+                            writer.WriteLine($" -{d.Cuenta.Nombre}: Debe = {d.Debe:C2} | Haber = {d.Haber:C2}");
                         }
                         writer.WriteLine(new string('-', 40));
                     }
                 }
-                 Console.WriteLine("Información respaldada exitosamente");
-                 Console.WriteLine($"Archivo guardado en: {Path.GetFullPath(rutaArchivo)}");
+                Console.WriteLine("Información respaldada exitosamente.");
+                Console.WriteLine($"Archivo guardado en: {Path.GetFullPath(rutaArchivo)}");
             }
             catch (Exception ex)
             {
-                 Console.WriteLine($"Ocurrió un error al intentar guardar el archivo: {ex.Message}");
+                Console.WriteLine($"Ocurrió un error al intentar guardar el archivo: {ex.Message}");
             }
         }
     }
