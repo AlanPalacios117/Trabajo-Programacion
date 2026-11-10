@@ -84,7 +84,7 @@ namespace app_contable
                 Console.WriteLine("2. Registrar operación contable");
                 Console.WriteLine("3. Consultar cuentas T");
                 Console.WriteLine("4. Generar libro diario");
-                Console.WriteLine("5. Generar libro mayor");
+                Console.WriteLine("5. Generar libro mayor (Detallado)");
                 Console.WriteLine("6. Generar balanza de comprobación");
                 Console.WriteLine("7. Generar estado de resultados");
                 Console.WriteLine("8. Generar balance general");
@@ -321,7 +321,7 @@ namespace app_contable
             }
         }
 
-        // --- MÉTODO AUXILIAR CON PREGUNTA ESTRICTA (S/N) PARA GENERAR EL ARCHIVO ---
+        // --- MÉTODO AUXILIAR CON PREGUNTA S/N PARA GENERAR ARCHIVO TXT ---
         static void GuardarYMostrarReporte(string nombreArchivo, string contenido)
         {
             Console.Clear();
@@ -356,7 +356,7 @@ namespace app_contable
                 }
                 else if (respuesta == "n")
                 {
-                    Console.WriteLine("\n[Archivo no generado por el usuario.]");
+                    Console.WriteLine("\n[Archivo no generado a petición del usuario.]");
                     respuestaValida = true;
                 }
                 else
@@ -392,6 +392,7 @@ namespace app_contable
             GuardarYMostrarReporte("LibroDiario.txt", sb.ToString());
         }
 
+        // --- LIBRO MAYOR DETALLADO CON FECHA Y NÚMERO DE ASIENTO ---
         static void GenerarLibroMayor()
         {
             Console.Clear();
@@ -404,14 +405,46 @@ namespace app_contable
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("--- LIBRO MAYOR ---");
+
             foreach (var c in catalogoCuentas)
             {
-                sb.AppendLine($"\nCuenta: {c.Codigo} - {c.Nombre} ({c.Tipo})");
-                sb.AppendLine($"  DEBE (+)      |      HABER (-)");
-                sb.AppendLine($"  {c.SaldoDebe,12:C2}  |  {c.SaldoHaber,12:C2}");
-                sb.AppendLine($"  ---------------------------------");
-                sb.AppendLine($"  Saldo Neto: {c.ObtenerSaldoNeto():C2}");
+                sb.AppendLine($"\n========================================================================");
+                sb.AppendLine($"Cuenta: {c.Codigo} - {c.Nombre} ({c.Tipo})");
+                sb.AppendLine($"========================================================================");
+                sb.AppendLine($"{"Fecha",-10} | {"Asiento",-8} | {"Concepto / Descripción",-25} | {"Debe",-10} | {"Haber",-10}");
+                sb.AppendLine(new string('-', 73));
+
+                decimal totalDebeCuenta = 0;
+                decimal totalHaberCuenta = 0;
+                bool tieneMovimientos = false;
+
+                foreach (var asiento in libroDiario)
+                {
+                    foreach (var d in asiento.Detalles)
+                    {
+                        if (d.Cuenta.Codigo == c.Codigo)
+                        {
+                            tieneMovimientos = true;
+                            string descCorta = asiento.Descripcion.Length > 25 ? asiento.Descripcion.Substring(0, 22) + "..." : asiento.Descripcion;
+                            sb.AppendLine($"{asiento.Fecha.ToShortDateString(),-10} | #{asiento.Numero,-7} | {descCorta,-25} | {d.Debe,10:C2} | {d.Haber,10:C2}");
+                            totalDebeCuenta += d.Debe;
+                            totalHaberCuenta += d.Haber;
+                        }
+                    }
+                }
+
+                if (!tieneMovimientos)
+                {
+                    sb.AppendLine("  (Sin movimientos registrados en este periodo)");
+                }
+                else
+                {
+                    sb.AppendLine(new string('-', 73));
+                    sb.AppendLine($"{"TOTALES ACUMULADOS:",-46} | {totalDebeCuenta,10:C2} | {totalHaberCuenta,10:C2}");
+                    sb.AppendLine($"{"SALDO NETO:",-46} | {c.ObtenerSaldoNeto(),12:C2}");
+                }
             }
+
             GuardarYMostrarReporte("LibroMayor.txt", sb.ToString());
         }
 
