@@ -84,7 +84,7 @@ namespace app_contable
                 Console.WriteLine("2. Registrar operación contable");
                 Console.WriteLine("3. Consultar cuentas T");
                 Console.WriteLine("4. Generar libro diario");
-                Console.WriteLine("5. Generar libro mayor (Detallado)");
+                Console.WriteLine("5. Generar libro mayor ");
                 Console.WriteLine("6. Generar balanza de comprobación");
                 Console.WriteLine("7. Generar estado de resultados");
                 Console.WriteLine("8. Generar balance general");
