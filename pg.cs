@@ -414,7 +414,7 @@ namespace app_contable
             }
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("--- LIBRO MAYOR DETALLADO (MOVIMIENTOS POR CUENTA) ---");
+            sb.AppendLine("--- LIBRO MAYOR ---");
 
             foreach (var c in catalogoCuentas)
             {
