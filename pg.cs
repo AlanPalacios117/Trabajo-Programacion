@@ -152,17 +152,27 @@ namespace app_contable
 
         static void InicializarCatalogoPredeterminado()
         {
-            // Cuentas basadas en el negocio del Bar
+            // Catalago de cuentas
             catalogoCuentas.Add(new Cuenta("1101", "Caja General (Efectivo)", "Activo"));
             catalogoCuentas.Add(new Cuenta("1102", "Bancos (POS / Transferencias)", "Activo"));
             catalogoCuentas.Add(new Cuenta("1103", "Inventario de Licores y Cervezas", "Activo"));
+            catalogoCuentas.Add(new Cuenta("1104", "Cuentas por Cobrar Clientes", "Activo"));
+            catalogoCuentas.Add(new Cuenta("1201", "Mobiliario y Equipo de Bar", "Activo"));
+            catalogoCuentas.Add(new Cuenta("1202", "Depreciación Acumulada Equipos de Bar", "Activo")); // Contra-cuenta de activo
+            
             catalogoCuentas.Add(new Cuenta("2101", "Cuentas por Pagar Proveedores", "Pasivo"));
+            catalogoCuentas.Add(new Cuenta("2102", "IVA / Impuestos por Pagar", "Pasivo"));
+            
             catalogoCuentas.Add(new Cuenta("3101", "Capital Social", "Capital"));
+            
             catalogoCuentas.Add(new Cuenta("4101", "Ingresos por Ventas (Bar y Cocina)", "Ingreso"));
+            
             catalogoCuentas.Add(new Cuenta("5101", "Gastos de Salarios por Turno", "Gasto"));
             catalogoCuentas.Add(new Cuenta("5102", "Gastos de Comisiones POS", "Gasto"));
             catalogoCuentas.Add(new Cuenta("5103", "Gastos de Alquiler y Servicios", "Gasto"));
             catalogoCuentas.Add(new Cuenta("5104", "Gastos por Mermas y Cortesías", "Gasto"));
+            catalogoCuentas.Add(new Cuenta("5105", "Costo de Ventas", "Gasto"));
+            catalogoCuentas.Add(new Cuenta("5106", "Gastos de Depreciación de Equipos", "Gasto"));
         }
 
         static void AdministrarCuentas()
@@ -242,7 +252,7 @@ namespace app_contable
                             }
                         }
 
-                        // Agregamos el detalle al asiento temporal
+                        // detalle al asiento temporal
                         nuevoAsiento.Detalles.Add(new DetalleAsiento(cuentaSeleccionada, debe, haber));
 
                         totalDebe += debe;
@@ -392,7 +402,7 @@ namespace app_contable
             GuardarYMostrarReporte("LibroDiario.txt", sb.ToString());
         }
 
-        // --- LIBRO MAYOR DETALLADO CON FECHA Y NÚMERO DE ASIENTO ---
+        // LIBRO MAYOR
         static void GenerarLibroMayor()
         {
             Console.Clear();
@@ -404,7 +414,7 @@ namespace app_contable
             }
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("--- LIBRO MAYOR ---");
+            sb.AppendLine("--- LIBRO MAYOR DETALLADO (MOVIMIENTOS POR CUENTA) ---");
 
             foreach (var c in catalogoCuentas)
             {
@@ -570,7 +580,7 @@ namespace app_contable
                 totalCapital += saldo;
             }
 
-            // Calculamos ingresos y gastos para sumar la Utilidad del Ejercicio al Patrimonio
+            // Calculamos ingresos y gastos para sumar la utilidad o restar la perdida
             foreach (var c in catalogoCuentas.FindAll(x => x.Tipo == "Ingreso"))
             {
                 totalIngresos += c.ObtenerSaldoNeto();
@@ -583,11 +593,22 @@ namespace app_contable
             decimal utilidadNeta = totalIngresos - totalGastos;
             sb.AppendLine($"  Utilidad del Ejercicio: {utilidadNeta:C2}");
 
-            decimal totalPatrimonioYUtilidad = totalCapital + utilidadNeta;
+            decimal totalPasivoYPatrimonio = totalPasivos + totalCapital + utilidadNeta;
 
-            sb.AppendLine(new string('-', 40));
-            sb.AppendLine($"TOTAL ACTIVOS: {totalActivos:C2}");
-            sb.AppendLine($"TOTAL PASIVO + PATRIMONIO: {(totalPasivos + totalPatrimonioYUtilidad):C2}");
+            sb.AppendLine(new string('-', 55));
+            sb.AppendLine($"TOTAL ACTIVOS:              {totalActivos:C2}");
+            sb.AppendLine($"TOTAL PASIVO + PATRIMONIO:  {totalPasivoYPatrimonio:C2}");
+            sb.AppendLine(new string('-', 55));
+
+            // Validacion  DE LA ECUACIÓN CONTABLE 
+            if (totalActivos == totalPasivoYPatrimonio)
+            {
+                sb.AppendLine("[ESTADO: BALANZA CUADRADA - ECUACIÓN CONTABLE CUMPLIDA]");
+            }
+            else
+            {
+                sb.AppendLine($"[ALERTA: BALANCE DESCUADRADO - DIFERENCIA: {(totalActivos - totalPasivoYPatrimonio):C2}]");
+            }
 
             GuardarYMostrarReporte("BalanceGeneral.txt", sb.ToString());
         }
